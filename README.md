@@ -93,10 +93,10 @@ CHAIRMAN_MODEL=openai/gpt-4o
 **Default Models:**
 ```typescript
 COUNCIL_MODELS = [
-  'openai/gpt-4o',
-  'openai/gpt-4o-mini',
-  'anthropic/claude-3.5-sonnet',
-  'meta-llama/llama-3.1-70b-instruct',
+    "openai/gpt-5.1-chat",
+    "google/gemini-3-pro-preview",
+    "anthropic/claude-sonnet-4.5",
+    "x-ai/grok-4"
 ]
 CHAIRMAN_MODEL = 'openai/gpt-4o'
 ```
