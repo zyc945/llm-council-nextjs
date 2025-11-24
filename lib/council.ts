@@ -50,11 +50,20 @@ export async function stage1CollectResponses(
   const messages: Message[] = [{ role: 'user', content: userQuery }];
 
   // Query all models in parallel
-  const tasks: ModelTask[] = councilModels.map((modelConfig) => ({
-    model: modelConfig.model,
-    messages,
-    systemPrompt: modelConfig.systemPrompt,
-  }));
+  const tasks: ModelTask[] = councilModels.map((modelConfig) => {
+    // Ensure we enforce language consistency in Stage 1
+    const baseSystemPrompt = modelConfig.systemPrompt || '';
+    const languageInstruction = 'IMPORTANT: You must respond in the same language as the user\'s input.';
+    const finalSystemPrompt = baseSystemPrompt 
+      ? `${baseSystemPrompt}\n\n${languageInstruction}`
+      : languageInstruction;
+
+    return {
+      model: modelConfig.model,
+      messages,
+      systemPrompt: finalSystemPrompt,
+    };
+  });
   const responses = await queryModelsParallel(tasks);
 
   // Format results
@@ -104,7 +113,7 @@ ${responsesText}
 Your task:
 1. First, evaluate each response individually. For each response, explain what it does well and what it does poorly.
 2. Then, at the very end of your response, provide a final ranking.
-3. IMPORTANT: Use the exact same language as the user's question shown above. Do not switch to any other language.
+3. CRITICAL: You MUST respond in the same language as the User's Question above. If the question is in Chinese, your entire evaluation must be in Chinese.
 
 IMPORTANT: Your final ranking MUST be formatted EXACTLY as follows:
 - Start with the line "FINAL RANKING:" (all caps, with colon)
@@ -123,7 +132,7 @@ FINAL RANKING:
 2. Response A
 3. Response B
 
-Now provide your evaluation and ranking:`;
+Now provide your evaluation and ranking (in the same language as the Question):`;
 
   const messages: Message[] = [{ role: 'user', content: rankingPrompt }];
 
@@ -187,7 +196,7 @@ Your task as Chairman is to synthesize all of this information into a single, co
 
 Provide a clear, well-reasoned final answer that represents the council's collective wisdom:`;
   const languageInstruction =
-    'IMPORTANT: Use the exact same language as the user\'s original question when writing your final answer.';
+    'CRITICAL: You MUST write your final answer in the same language as the Original Question above. If the question is in Chinese, your answer must be in Chinese.';
 
   const messages: Message[] = [
     { role: 'user', content: `${chairmanPrompt}\n\n${languageInstruction}` },

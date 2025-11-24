@@ -5,6 +5,7 @@ import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
 import SafeMarkdown from './SafeMarkdown';
+import { useTheme } from './ThemeProvider';
 import './ChatInterface.css';
 
 interface ChatInterfaceProps {
@@ -20,6 +21,7 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,6 +50,11 @@ export default function ChatInterface({
   if (!conversation) {
     return (
       <div className="chat-interface">
+        <div className="chat-header">
+          <button className="theme-toggle-btn-header" onClick={toggleTheme}>
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+        </div>
         <div className="empty-state">
           <h2>Welcome to LLM Council</h2>
           <p>Create a new conversation to get started</p>
@@ -58,6 +65,15 @@ export default function ChatInterface({
 
   return (
     <div className="chat-interface">
+      <div className="chat-header">
+        <div className="chat-title">
+          {conversation.title || 'New Conversation'}
+        </div>
+        <button className="theme-toggle-btn-header" onClick={toggleTheme}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+      </div>
+
       <div className="messages-container">
         {conversation.messages.length === 0 ? (
           <div className="empty-state">
@@ -151,4 +167,3 @@ export default function ChatInterface({
     </div>
   );
 }
-

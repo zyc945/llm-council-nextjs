@@ -1,26 +1,48 @@
 .stage3 {
-  background: #f0fff0;
-  border-color: #c8e6c8;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 24px;
+  width: 100%;
 }
 
 .final-response {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 6px;
-  border: 1px solid #c8e6c8;
+  background: rgba(16, 185, 129, 0.1); /* Emerald tint */
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.05);
 }
 
 .chairman-label {
-  color: #2d8a2d;
+  color: var(--success);
   font-size: 12px;
-  font-family: monospace;
-  margin-bottom: 12px;
-  font-weight: 600;
+  font-family: 'Menlo', monospace;
+  margin-bottom: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chairman-label::before {
+  content: '★';
+  font-size: 14px;
 }
 
 .final-text {
-  color: #333;
-  line-height: 1.7;
-  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-size: 16px;
 }
 
+/* Markdown overrides for final stage to ensure readability on green tint */
+.final-text strong {
+  color: #10b981;
+}
+
+.final-text h1, .final-text h2, .final-text h3 {
+  color: var(--text-primary);
+}

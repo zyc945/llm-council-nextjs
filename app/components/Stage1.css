@@ -1,66 +1,97 @@
 .stage {
-  margin: 24px 0;
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  margin: 16px 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--radius-lg);
+  width: 100%;
 }
 
 .stage-title {
   margin: 0 0 16px 0;
-  color: #333;
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-title::before {
+  content: '1';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  background: var(--bg-input);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .tab {
   padding: 8px 16px;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px 6px 0 0;
-  color: #666;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .tab:hover {
-  background: #f0f0f0;
-  color: #333;
-  border-color: #4a90e2;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab.active {
-  background: #ffffff;
-  color: #4a90e2;
-  border-color: #4a90e2;
-  border-bottom-color: #ffffff;
+  background: var(--bg-card);
+  color: var(--accent-primary);
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 .tab-content {
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  min-height: 200px; /* Add min-height to reduce jumping */
+  transition: height 0.3s ease; /* Smooth height transition */
 }
 
 .model-name {
-  color: #888;
+  color: var(--accent-primary);
   font-size: 12px;
   margin-bottom: 12px;
-  font-family: monospace;
+  font-family: 'Menlo', monospace;
+  background: rgba(59, 130, 246, 0.1);
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .response-text {
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.6;
 }
-

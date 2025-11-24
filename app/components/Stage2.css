@@ -1,10 +1,12 @@
 .stage2 {
-  background: #fafafa;
+  background: transparent;
+  border-radius: var(--radius-lg);
+  width: 100%;
 }
 
 .stage2 h4 {
   margin: 20px 0 8px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -15,23 +17,26 @@
 
 .stage-description {
   margin: 0 0 12px 0;
-  color: #666;
+  color: var(--text-muted);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .aggregate-rankings {
-  background: #f0f7ff;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 2px solid #d0e7ff;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .aggregate-rankings h4 {
-  margin: 0 0 12px 0;
-  color: #2a7ae2;
+  margin: 0 0 16px 0;
+  color: var(--accent-primary);
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .aggregate-list {
@@ -43,112 +48,140 @@
 .aggregate-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: #ffffff;
-  border-radius: 6px;
-  border: 1px solid #d0e7ff;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.aggregate-item:hover {
+  transform: translateX(4px);
+  border-color: var(--accent-primary);
 }
 
 .rank-position {
-  color: #2a7ae2;
-  font-weight: 700;
-  font-size: 16px;
-  min-width: 35px;
+  color: var(--accent-primary);
+  font-weight: 800;
+  font-size: 18px;
+  min-width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.1);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 .rank-model {
   flex: 1;
-  color: #333;
-  font-family: monospace;
+  color: var(--text-primary);
+  font-family: 'Menlo', monospace;
   font-size: 14px;
   font-weight: 500;
 }
 
 .rank-score {
-  color: #666;
+  color: var(--text-muted);
   font-size: 13px;
-  font-family: monospace;
+  font-family: 'Menlo', monospace;
 }
 
+/* Reusing tab styles from Stage 1 logic but applying here */
 .stage2 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  background: var(--bg-input);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .stage2 .tab {
   padding: 8px 16px;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px 6px 0 0;
-  color: #666;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .stage2 .tab:hover {
-  background: #f0f0f0;
-  color: #333;
-  border-color: #4a90e2;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .stage2 .tab.active {
-  background: #ffffff;
-  color: #4a90e2;
-  border-color: #4a90e2;
-  border-bottom-color: #ffffff;
+  background: var(--bg-card);
+  color: var(--accent-primary);
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 .stage2 .tab-content {
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
   margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
 }
 
 .ranking-model {
-  color: #888;
+  color: var(--accent-primary);
   font-size: 12px;
-  font-family: monospace;
+  font-family: 'Menlo', monospace;
   margin-bottom: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .ranking-content {
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.6;
   font-size: 14px;
 }
 
 .parsed-ranking {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 2px solid #e0e0e0;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
 }
 
 .parsed-ranking strong {
-  color: #2a7ae2;
+  color: var(--accent-primary);
   font-size: 13px;
+  display: block;
+  margin-bottom: 8px;
 }
 
 .parsed-ranking ol {
-  margin: 8px 0 0 0;
+  margin: 0;
   padding-left: 24px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .parsed-ranking li {
-  margin: 4px 0;
-  font-family: monospace;
+  margin: 6px 0;
+  font-family: 'Menlo', monospace;
   font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .rank-count {
-  color: #999;
+  color: var(--text-muted);
   font-size: 12px;
+  margin-left: 8px;
 }
-
