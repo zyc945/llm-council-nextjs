@@ -73,10 +73,23 @@ export default function ModelConfigModal({
   const isSelected = (modelId: string) =>
     draftConfigs.some((cfg) => cfg.model === modelId);
 
+  const toggleChairman = (modelId: string) => {
+    // If clicking the current chairman, unset it
+    if (draftChairman === modelId) {
+      setDraftChairman('');
+    } else {
+      setDraftChairman(modelId);
+    }
+  };
+
   const toggleModel = (modelId: string) => {
     setDraftConfigs((prev) => {
       const exists = prev.some((cfg) => cfg.model === modelId);
       if (exists) {
+        // If removing a model that's the chairman, also clear chairman
+        if (draftChairman === modelId) {
+          setDraftChairman('');
+        }
         return prev.filter((cfg) => cfg.model !== modelId);
       }
       return [
@@ -232,27 +245,43 @@ export default function ModelConfigModal({
               <div className="selected-list">
                 {draftConfigs.length === 0 ? (
                   <div className="modal-status">
-                    勾选上方列表中的模型后，可在此设置 System Prompt。
+                    勾选上方列表中的模型后，可在此设置 System Prompt 和主席角色。
                   </div>
                 ) : (
                   draftConfigs.map((cfg) => {
                     const option = catalogModels.get(cfg.model);
+                    const isChairman = draftChairman === cfg.model;
                     return (
-                      <div key={cfg.id} className="selected-item">
+                      <div key={cfg.id} className={`selected-item ${isChairman ? 'is-chairman' : ''}`}>
                         <div className="selected-item-header">
                           <div>
-                            <div className="model-name">
-                              {option?.name || cfg.model}
+                            <div className="model-name-row">
+                              <div className="model-name">
+                                {option?.name || cfg.model}
+                              </div>
+                              {isChairman && (
+                                <span className="chairman-badge">主席</span>
+                              )}
                             </div>
                             <div className="model-id">{cfg.model}</div>
                           </div>
-                          <button
-                            className="remove-btn"
-                            onClick={() => toggleModel(cfg.model)}
-                            aria-label="移除该模型"
-                          >
-                            移除
-                          </button>
+                          <div className="item-actions">
+                            <button
+                              className={`chairman-toggle-btn ${isChairman ? 'active' : ''}`}
+                              onClick={() => toggleChairman(cfg.model)}
+                              aria-label={isChairman ? "取消主席" : "设为主席"}
+                              title={isChairman ? "取消主席" : "设为主席"}
+                            >
+                              {isChairman ? '👑' : '♔'}
+                            </button>
+                            <button
+                              className="remove-btn"
+                              onClick={() => toggleModel(cfg.model)}
+                              aria-label="移除该模型"
+                            >
+                              移除
+                            </button>
+                          </div>
                         </div>
                         <textarea
                           className="prompt-textarea"
@@ -274,31 +303,17 @@ export default function ModelConfigModal({
                 )}
               </div>
             </div>
-            <div className="chairman-section">
-              <div className="chairman-header">
-                <h3>主席模型</h3>
-                <p>
-                  默认使用 <strong>{defaultChairmanModel}</strong>。可在此输入模型 ID 或从列表中选择。
-                </p>
+            {/* Chairman hint for Council mode */}
+            {draftMode === 'council' && (
+              <div className="chairman-info">
+                <span className="chairman-info-icon">ℹ️</span>
+                <div className="chairman-info-text">
+                  <strong>关于主席模型：</strong>
+                  点击右侧已选模型旁的 ♔ 图标可设为主席。
+                  {!draftChairman && ` 未设置时将使用默认：${defaultChairmanModel}`}
+                </div>
               </div>
-              <input
-                className="chairman-input"
-                list="chairman-model-options"
-                placeholder={`留空则使用 ${defaultChairmanModel}`}
-                value={draftChairman}
-                onChange={(e) => setDraftChairman(e.target.value)}
-              />
-              <datalist id="chairman-model-options">
-                {availableModels.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
-              </datalist>
-              <div className="chairman-hint">
-                建议选择在 OpenRouter 列表中可用的模型，以获得最佳兼容性。
-              </div>
-            </div>
+            )}
             </>
           )}
         </div>
