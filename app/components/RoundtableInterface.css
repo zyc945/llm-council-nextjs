@@ -170,8 +170,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Scrollbar styling for the container if needed */
+/* Allow container to expand naturally with content */
 .roundtable-container {
-  max-height: 80vh;
-  overflow-y: auto;
+  /* Removed max-height and overflow constraints for better UX */
 }
