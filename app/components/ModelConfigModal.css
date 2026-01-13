@@ -11,9 +11,9 @@
 }
 
 .modal-container {
-  width: min(1080px, 100%);
-  height: 85vh;
-  max-height: 900px;
+  width: min(1200px, 95%);
+  height: 90vh;
+  max-height: 1000px;
   background: var(--bg-app);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -243,8 +243,8 @@
   display: block;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
   cursor: pointer;
   transition: all 0.2s;
   background: var(--bg-card);
@@ -262,30 +262,47 @@
 
 .model-item-header {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.model-item-header > div {
+  flex: 1;
+  min-width: 0; /* Allow text to wrap properly */
+}
+
+.model-item-header input[type="checkbox"] {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .model-name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 15px;
   background: transparent; /* Reset override */
   padding: 0;
+  line-height: 1.4;
 }
 
 .model-id {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
-  font-family: 'Menlo', monospace;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  word-break: break-all;
+  line-height: 1.5;
 }
 
 .model-description {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  margin: 0 0 8px 0;
-  line-height: 1.5;
+  margin: 8px 0 10px 0;
+  line-height: 1.6;
+  word-wrap: break-word;
 }
 
 .model-tags {
@@ -295,12 +312,13 @@
 }
 
 .model-tag {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .selected-item {
@@ -407,9 +425,33 @@
   border-color: var(--text-secondary);
 }
 
+/* Optimize for laptop screens (1366px and below) */
+@media (max-width: 1400px) {
+  .modal-container {
+    width: 98%;
+  }
+}
+
+/* Tablet and smaller screens */
 @media (max-width: 900px) {
+  .modal-container {
+    height: 95vh;
+  }
+
   .modal-content {
     grid-template-columns: 1fr;
     max-height: 60vh;
+  }
+
+  .model-item {
+    padding: 14px;
+  }
+
+  .model-name {
+    font-size: 14px;
+  }
+
+  .model-id {
+    font-size: 12px;
   }
 }
