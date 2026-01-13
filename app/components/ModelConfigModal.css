@@ -259,6 +259,41 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.model-browser-search {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.model-browser-search .search-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-search-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
 .model-browser-body {
   padding: 16px;
   overflow-y: auto;
@@ -281,13 +316,29 @@
   min-height: 0;
 }
 
-.model-list,
-.selected-list {
+.model-list {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 16px;
   overflow-y: auto;
   background: var(--bg-input);
+}
+
+.selected-list {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--bg-input);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-content: start;
+}
+
+.selected-list .modal-status {
+  grid-column: 1 / -1;
+  margin: 40px 0;
 }
 
 .chairman-info {
@@ -299,6 +350,7 @@
   border-radius: var(--radius-md);
   padding: 14px 16px;
   margin-top: 16px;
+  grid-column: 1 / -1;
 }
 
 .chairman-info-icon {
@@ -404,9 +456,11 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px;
-  margin-bottom: 16px;
   background: var(--bg-card);
   transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
 }
 
 .selected-item.is-chairman {
@@ -669,6 +723,10 @@
     max-height: 60vh;
   }
 
+  .selected-list {
+    grid-template-columns: 1fr;
+  }
+
   .model-item {
     padding: 14px;
   }
@@ -699,5 +757,21 @@
 
   .footer-actions {
     justify-content: flex-end;
+  }
+
+  .search-bar-wrapper {
+    flex-direction: column;
+  }
+
+  .browse-models-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Large tablets and small laptops */
+@media (max-width: 1200px) {
+  .selected-list {
+    grid-template-columns: 1fr;
   }
 }

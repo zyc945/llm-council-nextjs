@@ -219,6 +219,24 @@ export default function ModelConfigModal({
                       ×
                     </button>
                   </div>
+                  <div className="model-browser-search">
+                    <input
+                      className="search-input"
+                      placeholder="搜索模型名称或 ID..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      autoFocus
+                    />
+                    {search && (
+                      <button
+                        className="clear-search-btn"
+                        onClick={() => setSearch('')}
+                        title="清除搜索"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                   <div className="model-browser-body">
                     {filteredOptions.length === 0 ? (
                       <div className="modal-status">无匹配结果</div>
