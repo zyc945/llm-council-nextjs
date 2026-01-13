@@ -150,28 +150,6 @@ export default function ModelConfigModal({
 
         <div className="modal-body">
           <div className="modal-controls">
-            <div className="mode-selector">
-              <label className={draftMode === 'council' ? 'active' : ''}>
-                <input
-                  type="radio"
-                  name="mode"
-                  value="council"
-                  checked={draftMode === 'council'}
-                  onChange={() => setDraftMode('council')}
-                />
-                Council (3-Stage)
-              </label>
-              <label className={draftMode === 'roundtable' ? 'active' : ''}>
-                <input
-                  type="radio"
-                  name="mode"
-                  value="roundtable"
-                  checked={draftMode === 'roundtable'}
-                  onChange={() => setDraftMode('roundtable')}
-                />
-                Roundtable (Discussion)
-              </label>
-            </div>
             <input
               className="search-input"
               placeholder="搜索模型名称或 ID"
@@ -319,16 +297,49 @@ export default function ModelConfigModal({
         </div>
 
         <div className="modal-footer">
-          <button className="secondary-btn" onClick={onClose}>
-            取消
-          </button>
-          <button
-            className="primary-btn"
-            onClick={handleSave}
-            disabled={disableSave}
-          >
-            保存
-          </button>
+          <div className="footer-mode-selector">
+            <label className="footer-mode-label">对话模式：</label>
+            <label className={`footer-mode-option ${draftMode === 'council' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="mode"
+                value="council"
+                checked={draftMode === 'council'}
+                onChange={() => setDraftMode('council')}
+              />
+              <span className="mode-icon">🎯</span>
+              <div className="mode-text">
+                <span className="mode-name">Council</span>
+                <span className="mode-desc">三阶段议会模式</span>
+              </div>
+            </label>
+            <label className={`footer-mode-option ${draftMode === 'roundtable' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="mode"
+                value="roundtable"
+                checked={draftMode === 'roundtable'}
+                onChange={() => setDraftMode('roundtable')}
+              />
+              <span className="mode-icon">💬</span>
+              <div className="mode-text">
+                <span className="mode-name">Roundtable</span>
+                <span className="mode-desc">圆桌讨论模式</span>
+              </div>
+            </label>
+          </div>
+          <div className="footer-actions">
+            <button className="secondary-btn" onClick={onClose}>
+              取消
+            </button>
+            <button
+              className="primary-btn"
+              onClick={handleSave}
+              disabled={disableSave}
+            >
+              保存
+            </button>
+          </div>
         </div>
       </div>
     </div>
