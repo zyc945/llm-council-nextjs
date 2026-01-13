@@ -50,6 +50,7 @@ export default function ModelConfigModal({
     chairmanModel || ''
   );
   const [draftMode, setDraftMode] = useState<'council' | 'roundtable'>(initialMode);
+  const [showModelBrowser, setShowModelBrowser] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,8 +58,16 @@ export default function ModelConfigModal({
       setDraftChairman(chairmanModel || '');
       setDraftMode(initialMode);
       setSearch('');
+      setShowModelBrowser(false);
     }
   }, [initialConfigs, chairmanModel, initialMode, isOpen]);
+
+  // Auto-show browser when user starts typing
+  useEffect(() => {
+    if (search.trim().length > 0) {
+      setShowModelBrowser(true);
+    }
+  }, [search]);
 
   const normalizedSearch = search.trim().toLowerCase();
 
@@ -150,15 +159,34 @@ export default function ModelConfigModal({
 
         <div className="modal-body">
           <div className="modal-controls">
-            <input
-              className="search-input"
-              placeholder="搜索模型名称或 ID"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              disabled={isLoading}
-            />
+            <div className="search-bar-wrapper">
+              <input
+                className="search-input"
+                placeholder="搜索模型名称或 ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setShowModelBrowser(true)}
+                disabled={isLoading}
+              />
+              <button
+                className="browse-models-btn"
+                onClick={() => setShowModelBrowser(!showModelBrowser)}
+                disabled={isLoading}
+                title="浏览模型列表"
+              >
+                📋 浏览模型
+              </button>
+            </div>
             <div className="modal-meta">
               已选择 {draftConfigs.length} 个模型
+              {showModelBrowser && (
+                <button
+                  className="close-browser-hint"
+                  onClick={() => setShowModelBrowser(false)}
+                >
+                  关闭浏览器
+                </button>
+              )}
             </div>
           </div>
 
@@ -177,49 +205,66 @@ export default function ModelConfigModal({
 
           {!isLoading && !errorMessage && (
             <>
-            <div className="modal-content">
-              <div className="model-list">
-                {filteredOptions.length === 0 ? (
-                  <div className="modal-status">无匹配结果</div>
-                ) : (
-                  filteredOptions.map((option) => (
-                    <label
-                      key={option.id}
-                      className={`model-item ${
-                        isSelected(option.id) ? 'selected' : ''
-                      }`}
+            {/* Floating Model Browser */}
+            {showModelBrowser && (
+              <div className="model-browser-overlay" onClick={() => setShowModelBrowser(false)}>
+                <div className="model-browser-panel" onClick={(e) => e.stopPropagation()}>
+                  <div className="model-browser-header">
+                    <h3>选择模型</h3>
+                    <button
+                      className="browser-close-btn"
+                      onClick={() => setShowModelBrowser(false)}
+                      aria-label="关闭"
                     >
-                      <div className="model-item-header">
-                        <input
-                          type="checkbox"
-                          checked={isSelected(option.id)}
-                          onChange={() => toggleModel(option.id)}
-                        />
-                        <div>
-                          <div className="model-name">{option.name}</div>
-                          <div className="model-id">{option.id}</div>
-                        </div>
-                      </div>
-                      {option.description && (
-                        <p className="model-description">{option.description}</p>
-                      )}
-                      <div className="model-tags">
-                        {option.pricing && (
-                          <span className="model-tag">
-                            Prompt: {option.pricing}
-                          </span>
-                        )}
-                        {option.context_length && (
-                          <span className="model-tag">
-                            Context: {option.context_length}
-                          </span>
-                        )}
-                      </div>
-                    </label>
-                  ))
-                )}
+                      ×
+                    </button>
+                  </div>
+                  <div className="model-browser-body">
+                    {filteredOptions.length === 0 ? (
+                      <div className="modal-status">无匹配结果</div>
+                    ) : (
+                      filteredOptions.map((option) => (
+                        <label
+                          key={option.id}
+                          className={`model-item ${
+                            isSelected(option.id) ? 'selected' : ''
+                          }`}
+                        >
+                          <div className="model-item-header">
+                            <input
+                              type="checkbox"
+                              checked={isSelected(option.id)}
+                              onChange={() => toggleModel(option.id)}
+                            />
+                            <div>
+                              <div className="model-name">{option.name}</div>
+                              <div className="model-id">{option.id}</div>
+                            </div>
+                          </div>
+                          {option.description && (
+                            <p className="model-description">{option.description}</p>
+                          )}
+                          <div className="model-tags">
+                            {option.pricing && (
+                              <span className="model-tag">
+                                Prompt: {option.pricing}
+                              </span>
+                            )}
+                            {option.context_length && (
+                              <span className="model-tag">
+                                Context: {option.context_length}
+                              </span>
+                            )}
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
+            )}
 
+            <div className="modal-content-single">
               <div className="selected-list">
                 {draftConfigs.length === 0 ? (
                   <div className="modal-status">
