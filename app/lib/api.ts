@@ -79,7 +79,8 @@ export const api = {
     councilModels: Array<{ model: string; systemPrompt?: string }>,
     chairmanModel: string,
     onEvent: (eventType: string, event: any) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mode: 'council' | 'roundtable' = 'council'
   ) {
     const response = await fetch(
       `${API_BASE}/conversations/${conversationId}/message/stream`,
@@ -88,7 +89,7 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content, councilModels, chairmanModel }),
+        body: JSON.stringify({ content, councilModels, chairmanModel, mode }),
         signal,
       }
     );

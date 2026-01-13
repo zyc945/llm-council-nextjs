@@ -26,7 +26,9 @@ interface ModelConfigModalProps {
   onSave: (data: {
     configs: ModelConfigInput[];
     chairmanModel: string | null;
+    mode: 'council' | 'roundtable';
   }) => void;
+  initialMode?: 'council' | 'roundtable';
 }
 
 export default function ModelConfigModal({
@@ -36,6 +38,7 @@ export default function ModelConfigModal({
   isLoading,
   chairmanModel,
   defaultChairmanModel,
+  initialMode = 'council',
   errorMessage,
   onRetryFetch,
   onClose,
@@ -46,14 +49,16 @@ export default function ModelConfigModal({
   const [draftChairman, setDraftChairman] = useState<string>(
     chairmanModel || ''
   );
+  const [draftMode, setDraftMode] = useState<'council' | 'roundtable'>(initialMode);
 
   useEffect(() => {
     if (isOpen) {
       setDraftConfigs(initialConfigs.map((cfg) => ({ ...cfg })));
       setDraftChairman(chairmanModel || '');
+      setDraftMode(initialMode);
       setSearch('');
     }
-  }, [initialConfigs, chairmanModel, isOpen]);
+  }, [initialConfigs, chairmanModel, initialMode, isOpen]);
 
   const normalizedSearch = search.trim().toLowerCase();
 
@@ -102,6 +107,7 @@ export default function ModelConfigModal({
     onSave({
       configs: sanitized,
       chairmanModel: normalizedChairman.length > 0 ? normalizedChairman : null,
+      mode: draftMode,
     });
   };
 
@@ -131,6 +137,28 @@ export default function ModelConfigModal({
 
         <div className="modal-body">
           <div className="modal-controls">
+            <div className="mode-selector">
+              <label className={draftMode === 'council' ? 'active' : ''}>
+                <input
+                  type="radio"
+                  name="mode"
+                  value="council"
+                  checked={draftMode === 'council'}
+                  onChange={() => setDraftMode('council')}
+                />
+                Council (3-Stage)
+              </label>
+              <label className={draftMode === 'roundtable' ? 'active' : ''}>
+                <input
+                  type="radio"
+                  name="mode"
+                  value="roundtable"
+                  checked={draftMode === 'roundtable'}
+                  onChange={() => setDraftMode('roundtable')}
+                />
+                Roundtable (Discussion)
+              </label>
+            </div>
             <input
               className="search-input"
               placeholder="搜索模型名称或 ID"

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
+import RoundtableInterface from './RoundtableInterface';
 import SafeMarkdown from './SafeMarkdown';
 import { useTheme } from './ThemeProvider';
 import './ChatInterface.css';
@@ -96,7 +97,15 @@ export default function ChatInterface({
                 <div className="assistant-message">
                   <div className="message-label">LLM Council</div>
 
-                  {/* Stage 1 */}
+                  {/* Roundtable Mode */}
+                  {(msg.roundtable_turns || msg.loading?.roundtable) && (
+                    <RoundtableInterface
+                      turns={msg.roundtable_turns || []}
+                      currentSpeaker={msg.current_speaker}
+                    />
+                  )}
+
+                  {/* Council Mode (Stage 1) */}
                   {msg.loading?.stage1 && (
                     <div className="stage-loading">
                       <div className="spinner"></div>
@@ -144,17 +153,26 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-      {conversation.messages.length === 0 && (
-        <form className="input-form" onSubmit={handleSubmit}>
-          <textarea
-            className="message-input"
-            placeholder="Ask your question... (Shift+Enter for new line, Enter to send)"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            rows={3}
-          />
+      <form className="input-form" onSubmit={handleSubmit}>
+        <textarea
+          className="message-input"
+          placeholder={conversation.messages.length === 0 ? "Ask your question..." : "Insert intervention or continue discussion..."}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          rows={3}
+        />
+        <div className="input-actions">
+          {conversation.messages.length > 0 && !isLoading && (
+            <button
+              type="button"
+              className="continue-btn"
+              onClick={() => onSendMessage("Please continue the discussion.")}
+            >
+              继续讨论 ⬇️
+            </button>
+          )}
           <button
             type="submit"
             className="send-button"
@@ -162,8 +180,8 @@ export default function ChatInterface({
           >
             Send
           </button>
-        </form>
-      )}
+        </div>
+      </form>
     </div>
   );
 }

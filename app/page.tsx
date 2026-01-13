@@ -35,6 +35,8 @@ export default function Home() {
   const [modelsError, setModelsError] = useState<string | null>(null);
   const streamControllerRef = useRef<AbortController | null>(null);
 
+  const [mode, setMode] = useState<'council' | 'roundtable'>('council');
+
   // Load conversations and default models on mount
   useEffect(() => {
     loadConversations();
@@ -106,21 +108,45 @@ export default function Home() {
     try {
       const conv = await api.getConversation(id);
       setCurrentConversation(conv);
+      if (conv.mode) {
+        setMode(conv.mode);
+      }
     } catch (error) {
       console.error('Failed to load conversation:', error);
     }
   };
 
   const handleNewConversation = async () => {
+    // Open the config modal first to let user choose mode and models
+    setIsConfigModalOpen(true);
+    if (availableModels.length === 0 && !isModelsLoading) {
+      loadAvailableModels();
+    }
+    // Note: The actual creation will happen after saving config OR on first message
+  };
+
+  const createConversationAndSaveConfig = async (configData: {
+    configs: ModelConfigInput[];
+    chairmanModel: string | null;
+    mode: 'council' | 'roundtable';
+  }) => {
     try {
       const newConv = await api.createConversation();
       setConversations([
         { id: newConv.id, created_at: newConv.created_at, title: newConv.title, message_count: 0 },
         ...conversations,
       ]);
+
+      // Update local state
+      setModelConfigs(configData.configs);
+      setChairmanModel(configData.chairmanModel);
+      setMode(configData.mode);
+
+      // Select the new conversation
       setCurrentConversationId(newConv.id);
+      setIsConfigModalOpen(false);
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      console.error('Failed to create conversation with config:', error);
     }
   };
 
@@ -146,10 +172,18 @@ export default function Home() {
   const handleSaveModelConfigs = (data: {
     configs: ModelConfigInput[];
     chairmanModel: string | null;
+    mode: 'council' | 'roundtable';
   }) => {
-    setModelConfigs(data.configs);
-    setChairmanModel(data.chairmanModel);
-    setIsConfigModalOpen(false);
+    // If we were on an empty screen or about to start a new one, create it now
+    if (!currentConversationId || (currentConversation && currentConversation.messages.length === 0)) {
+      createConversationAndSaveConfig(data);
+    } else {
+      // Just update config for current conversation
+      setModelConfigs(data.configs);
+      setChairmanModel(data.chairmanModel);
+      setMode(data.mode);
+      setIsConfigModalOpen(false);
+    }
   };
 
   const handleSendMessage = async (content: string) => {
@@ -198,11 +232,13 @@ export default function Home() {
         stage1: null,
         stage2: null,
         stage3: null,
+        roundtable_turns: [],
         metadata: null,
         loading: {
           stage1: false,
           stage2: false,
           stage3: false,
+          roundtable: mode === 'roundtable',
         },
       };
 
@@ -223,6 +259,96 @@ export default function Home() {
         activeChairmanModel,
         (eventType, event) => {
           switch (eventType) {
+            case 'roundtable_start':
+              setCurrentConversation((prev: any) => {
+                if (!prev) return prev;
+                const messages = [...prev.messages];
+                const lastMsg = messages[messages.length - 1];
+                if (!lastMsg) return prev;
+                lastMsg.loading = { roundtable: true };
+                lastMsg.roundtable_turns = [];
+                return { ...prev, messages };
+              });
+              break;
+
+            case 'roundtable_turn_start':
+              setCurrentConversation((prev: any) => {
+                if (!prev) return prev;
+                const messages = [...prev.messages];
+                const lastMsg = messages[messages.length - 1];
+                if (!lastMsg) return prev;
+                lastMsg.current_speaker = {
+                  model_id: event.model_id,
+                  model_name: event.model_name,
+                };
+                return { ...prev, messages };
+              });
+              break;
+
+            case 'roundtable_turn_complete':
+              console.log('[DEBUG] roundtable_turn_complete event received:', {
+                turn_id: event.turn_id,
+                model_id: event.model_id,
+                model_name: event.model_name,
+                content_preview: event.data?.substring(0, 50)
+              });
+
+              setCurrentConversation((prev: any) => {
+                if (!prev) return prev;
+
+                // Deep clone messages array to ensure immutability
+                const messages = [...prev.messages];
+                const lastIndex = messages.length - 1;
+                if (lastIndex < 0) return prev;
+
+                // Clone the message object we're updating
+                const lastMsg = { ...messages[lastIndex] };
+
+                // Get existing turns and check for duplicates by turn ID (now guaranteed unique)
+                const existingTurns = lastMsg.roundtable_turns || [];
+                console.log('[DEBUG] Existing turns count:', existingTurns.length);
+                console.log('[DEBUG] Existing turn IDs:', existingTurns.map((t: any) => t.id));
+
+                // Check if this turn_id already exists
+                const isDuplicate = existingTurns.some(
+                  (t: any) => t.id === event.turn_id
+                );
+
+                if (isDuplicate) {
+                  console.log('[DEBUG] DUPLICATE DETECTED (turn_id exists) - skipping');
+                  return prev;
+                }
+
+                console.log('[DEBUG] Adding new turn with ID:', event.turn_id);
+                lastMsg.roundtable_turns = [
+                  ...existingTurns,
+                  {
+                    id: event.turn_id,
+                    role: 'assistant',
+                    model_id: event.model_id,
+                    model_name: event.model_name || event.model_id.split('/')[1] || event.model_id,
+                    content: event.data,
+                    timestamp: new Date().toISOString()
+                  },
+                ];
+                lastMsg.current_speaker = null;
+                messages[lastIndex] = lastMsg;
+
+                return { ...prev, messages };
+              });
+              break;
+
+            case 'roundtable_complete':
+              setCurrentConversation((prev: any) => {
+                if (!prev) return prev;
+                const messages = [...prev.messages];
+                const lastMsg = messages[messages.length - 1];
+                if (!lastMsg) return prev;
+                lastMsg.loading.roundtable = false;
+                return { ...prev, messages };
+              });
+              break;
+
             case 'stage1_start':
               setCurrentConversation((prev: any) => {
                 if (!prev) return prev;
@@ -294,13 +420,14 @@ export default function Home() {
               break;
 
             case 'title_complete':
-              // Reload conversations to get updated title
-              loadConversations();
+              // We only reload the list, not the current conversation object
+              // to prevent React state reset issues
+              api.listConversations().then(list => setConversations(list));
               break;
 
             case 'complete':
-              // Stream complete, reload conversations list
-              loadConversations();
+              // Stream complete, just refresh the sidebar list
+              api.listConversations().then(list => setConversations(list));
               break;
 
             case 'error':
@@ -311,7 +438,8 @@ export default function Home() {
               console.log('Unknown event type:', eventType);
           }
         },
-        controller.signal
+        controller.signal,
+        mode
       );
     } catch (error: any) {
       if (error?.name === 'AbortError') {
@@ -357,6 +485,7 @@ export default function Home() {
         availableModels={availableModels}
         chairmanModel={chairmanModel}
         defaultChairmanModel={defaultChairmanModel}
+        initialMode={mode}
         isLoading={isModelsLoading}
         errorMessage={modelsError}
         onRetryFetch={loadAvailableModels}

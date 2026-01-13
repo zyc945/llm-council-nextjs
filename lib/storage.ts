@@ -13,6 +13,18 @@ export interface Message {
   stage2?: any[];
   stage3?: any;
   metadata?: any;
+  // Roundtable fields
+  roundtable_turns?: RoundtableTurn[];
+  is_intervention?: boolean;
+}
+
+export interface RoundtableTurn {
+  id: string; // Unique identifier for this turn
+  role: 'assistant';
+  model_id: string;
+  model_name: string;
+  content: string;
+  timestamp: string;
 }
 
 export interface Conversation {
@@ -20,6 +32,8 @@ export interface Conversation {
   created_at: string;
   title: string;
   messages: Message[];
+  mode?: 'council' | 'roundtable';
+  config?: any; // To store per-conversation settings
 }
 
 export interface ConversationMetadata {
@@ -166,6 +180,28 @@ export function addAssistantMessage(
     metadata,
   });
 
+  saveConversation(conversation);
+}
+
+export function saveRoundtableMessage(
+  conversationId: string,
+  turns: RoundtableTurn[]
+): void {
+  /**
+   * Add or replace the last assistant message with complete roundtable turns.
+   */
+  const conversation = getConversation(conversationId);
+  if (!conversation) {
+    throw new Error(`Conversation ${conversationId} not found`);
+  }
+
+  // Create the final message block
+  const roundtableMessage: Message = {
+    role: 'assistant',
+    roundtable_turns: turns,
+  };
+
+  conversation.messages.push(roundtableMessage);
   saveConversation(conversation);
 }
 
