@@ -1,0 +1,74 @@
+# ============================================
+# LLM Council - Development Docker Compose
+# Hot-reload enabled for development
+# ============================================
+
+services:
+  llm-council-dev:
+    container_name: llm-council-dev
+    image: llm-council:dev
+
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    ports:
+      - "${PORT:-3000}:3000"
+
+    environment:
+      # 开发环境
+      - NODE_ENV=development
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required}
+
+      # 可选：自定义模型配置
+      - COUNCIL_MODELS=${COUNCIL_MODELS:-}
+      - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-}
+
+      # 服务器配置
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+
+      # 开发调试
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - DEBUG=${DEBUG:-}
+
+    volumes:
+      # 源代码热重载（排除 node_modules 和 .next）
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+      # 数据目录
+      - ./data:/app/data
+
+    networks:
+      - llm-council-dev-network
+
+    # 开发环境不需要严格的资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+
+    # 开发环境重启策略
+    restart: unless-stopped
+
+    # 标准输出日志（方便开发调试）
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+
+    # 优雅关闭
+    stop_grace_period: 10s
+
+    # stdin/tty 支持（用于调试）
+    stdin_open: true
+    tty: true
+
+# 自定义网络
+networks:
+  llm-council-dev-network:
+    driver: bridge

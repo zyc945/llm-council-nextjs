@@ -22,12 +22,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local env files
-.env*.local
+# Environment files (keep only .env.example in git)
 .env
+.env*.local
+.env.development
+.env.test
+.env.production
 
 # Vercel
 .vercel
+
+# Docker and backups
+backups/
+*.tar.gz
+data-test/
 
 # TypeScript
 *.tsbuildinfo

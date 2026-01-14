@@ -1,11 +1,12 @@
 # ============================================
-# LLM Council - Production Docker Compose
+# LLM Council - Test Environment Docker Compose
+# Production-like configuration for testing
 # ============================================
 
 services:
-  llm-council:
-    container_name: llm-council-app
-    image: llm-council:latest
+  llm-council-test:
+    container_name: llm-council-test
+    image: llm-council:test
 
     build:
       context: .
@@ -16,32 +17,30 @@ services:
         - NODE_ENV=production
 
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-3001}:3000"
 
     environment:
-      # 必需配置
+      # 测试环境
       - NODE_ENV=production
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required}
 
       # 可选：自定义模型配置
-      - COUNCIL_MODELS=${COUNCIL_MODELS:-deepseek/deepseek-v3.2-exp,google/gemini-3-pro-preview,anthropic/claude-sonnet-4.5,x-ai/grok-4}
-      - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-openai/gpt-4o}
+      - COUNCIL_MODELS=${COUNCIL_MODELS:-}
+      - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-}
 
       # 服务器配置
       - PORT=3000
       - HOSTNAME=0.0.0.0
 
-      # 日志配置
-      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # 测试环境日志
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
 
     volumes:
-      # 数据持久化（使用命名卷）
-      - llm-council-data:/app/data
-      # 或使用本地目录（取消注释下面一行，注释上面一行）
-      # - ./data:/app/data
+      # 测试数据目录（独立于生产和开发）
+      - llm-council-test-data:/app/data
 
     networks:
-      - llm-council-network
+      - llm-council-test-network
 
     # 健康检查
     healthcheck:
@@ -51,15 +50,15 @@ services:
       retries: 3
       start_period: 40s
 
-    # 资源限制
+    # 测试环境资源限制
     deploy:
       resources:
         limits:
           cpus: '2'
           memory: 2G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '0.25'
+          memory: 256M
 
     # 重启策略
     restart: unless-stopped
@@ -69,26 +68,17 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
-        max-file: "3"
-        compress: "true"
+        max-file: "2"
 
     # 优雅关闭
     stop_grace_period: 30s
 
-# 命名卷
+# 测试数据卷
 volumes:
-  llm-council-data:
+  llm-council-test-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_DIR:-./data}
 
-# 自定义网络
+# 测试网络
 networks:
-  llm-council-network:
+  llm-council-test-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
-

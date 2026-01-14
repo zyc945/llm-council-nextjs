@@ -33,11 +33,17 @@ cd llm-council-nextjs
 # 2. Configure API key
 echo "OPENROUTER_API_KEY=sk-or-v1-your-api-key" > .env
 
-# 3. Start with Docker
+# 3. Start with Docker (Production mode)
 docker-compose up -d
 
 # 4. Open browser
 open http://localhost:3000
+```
+
+**Alternative: Development mode with hot-reload**
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up
 ```
 
 ### Method 2: Local Development
@@ -56,18 +62,24 @@ npm run dev
 open http://localhost:3000
 ```
 
-### Using the Startup Script
+### Method 3: Interactive Startup Script (Easiest)
 
 ```bash
-# Interactive setup
+# Interactive setup with multiple deployment options
 ./start.sh
 ```
 
 The script will:
-- Check for Docker
-- Help you create configuration
+- Let you choose deployment mode (Local / Docker Dev / Docker Prod / Docker Test)
+- Help you create and configure environment files
 - Install dependencies if needed
-- Start the application
+- Automatically start the application
+
+**Deployment Modes**:
+1. **Local Dev** - npm run dev with hot-reload
+2. **Docker Dev** - Containerized development with source mounting
+3. **Docker Prod** - Production-optimized build
+4. **Docker Test** - Testing environment on port 3001
 
 ---
 
@@ -166,32 +178,97 @@ llm-council-nextjs/
 
 ## Docker Deployment
 
-### Basic Commands
+### Multiple Environment Support
+
+The project supports three Docker deployment modes:
+
+#### Production Environment (Recommended for deployment)
+```bash
+# Full production deployment with backup and health checks
+bash scripts/deploy.sh
+
+# Or manually
+docker-compose up -d --build
+```
+
+#### Development Environment (Hot-reload enabled)
+```bash
+# Start development container
+docker-compose -f docker-compose.dev.yml up
+
+# Background mode
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+#### Test Environment (Isolated testing)
+```bash
+# Start test environment on port 3001
+docker-compose -f docker-compose.test.yml up -d
+```
+
+### Essential Commands
 
 ```bash
-# Start
-docker-compose up -d
+# Production
+docker-compose up -d                    # Start
+docker-compose logs -f                  # View logs
+docker-compose down                     # Stop
+docker-compose restart                  # Restart
+docker-compose ps                       # Check status
 
-# View logs
-docker-compose logs -f
+# Development
+docker-compose -f docker-compose.dev.yml up     # Start (foreground)
+docker-compose -f docker-compose.dev.yml logs -f # Logs
+docker-compose -f docker-compose.dev.yml down   # Stop
 
-# Stop
-docker-compose down
+# Health check
+bash scripts/healthcheck.sh
 
-# Rebuild
-docker-compose up -d --build
+# Data backup
+bash scripts/backup.sh
+```
 
-# Check status
-docker-compose ps
+### Configuration Files
+
+```
+Dockerfile                  # Production build
+Dockerfile.dev             # Development build
+docker-compose.yml         # Production config
+docker-compose.dev.yml     # Development config
+docker-compose.test.yml    # Test config
+.env                       # Production environment variables
+.env.development           # Development environment variables
+.env.test                  # Test environment variables
 ```
 
 ### Custom Port
 
-Edit `docker-compose.yml`:
+Edit the respective `docker-compose*.yml` file:
 ```yaml
 ports:
-  - "8080:3000"  # Use port 8080 instead
+  - "8080:3000"  # Use port 8080 instead of 3000
 ```
+
+Or set in `.env`:
+```bash
+PORT=8080
+```
+
+### Advanced Features
+
+**Health Checks**: Automatically enabled in production mode
+- Interval: 30 seconds
+- Timeout: 10 seconds
+- Retries: 3 times
+
+**Resource Limits**: Configured in docker-compose.yml
+- CPU: 2 cores (max), 0.5 cores (reserved)
+- Memory: 2GB (max), 512MB (reserved)
+
+**Log Rotation**: Automatic log management
+- Max size: 10MB per file
+- Max files: 3
+- Compression: Enabled
 
 ### Docker Troubleshooting
 
@@ -199,6 +276,9 @@ ports:
 ```bash
 # Find and kill process
 lsof -ti :3000 | xargs kill -9
+
+# Or change port in .env
+echo "PORT=3001" >> .env
 ```
 
 **Issue: Build fails**
@@ -206,15 +286,39 @@ lsof -ti :3000 | xargs kill -9
 # Clean rebuild
 docker-compose down
 docker system prune -a
-docker-compose up -d --build
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
-**Issue: Image pull fails**
+**Issue: Container unhealthy**
 ```bash
-# Pull manually first
-docker pull node:20-alpine
-docker-compose up -d --build
+# Check health status
+bash scripts/healthcheck.sh
+
+# View detailed logs
+docker-compose logs --tail=100
+
+# Restart container
+docker-compose restart
 ```
+
+**Issue: Development hot-reload not working**
+```bash
+# Ensure using dev compose file
+docker-compose -f docker-compose.dev.yml up
+
+# Check volume mounts
+docker-compose -f docker-compose.dev.yml config
+```
+
+### Complete Docker Documentation
+
+For comprehensive Docker deployment guide, see [DOCKER.md](DOCKER.md):
+- Multi-environment setup
+- Performance optimization
+- Monitoring and logging
+- Security best practices
+- Production deployment checklist
 
 ---
 
