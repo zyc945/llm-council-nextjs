@@ -2,17 +2,37 @@
 
 ![llmcouncil](header.jpg)
 
-An innovative AI assistant that doesn't just query a single LLM, but organizes multiple LLMs (OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, etc.) into a "Council". The app sends your query to multiple LLMs, has them review and rank each other's responses, and finally a Chairman LLM synthesizes the collective wisdom into a final answer.
+An innovative AI assistant that doesn't just query a single LLM, but organizes multiple LLMs (OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, etc.) into a "Council".
+
+## Two Modes Available
+
+### 🏛️ Council Mode (3-Stage Process)
+The app sends your query to multiple LLMs, has them review and rank each other's responses, and finally a Chairman LLM synthesizes the collective wisdom into a final answer.
+
+### 💬 Discussion Mode (NEW)
+Watch AI agents with different personalities engage in real-time collaborative discussion. Each agent plays a distinct role (Optimist, Pessimist, Pragmatist, Innovator) and responds to others' points. You can intervene at any time to guide the conversation.
+
+---
 
 ## How It Works
 
-When you submit a query, it goes through three stages:
+### Council Mode - Three Stages
 
 1. **Stage 1: Initial Opinions**. Your query is sent to all council members individually, and their responses are collected. You can inspect each response in separate tabs.
 
 2. **Stage 2: Peer Review**. Each LLM receives the other responses (anonymized to prevent bias) and ranks them based on accuracy and insight. This reveals which responses the AI community finds most valuable.
 
 3. **Stage 3: Final Answer**. The Chairman LLM synthesizes all responses and rankings into a single, comprehensive answer that represents the council's collective wisdom.
+
+### Discussion Mode - Real-Time Conversation
+
+1. **Setup**: Choose your topic and the system initializes 4 agents with different perspectives.
+
+2. **Round-Robin Discussion**: Each agent takes turns responding, building on or challenging previous points.
+
+3. **User Intervention**: At any time, you can jump in to redirect the discussion, correct misinformation, or ask for deeper analysis.
+
+4. **Termination**: Discussion ends when consensus is reached OR after 20 rounds (whichever comes first).
 
 ---
 
@@ -123,6 +143,25 @@ View all available models at: https://openrouter.ai/models
 - 可在同一弹窗中指定主席模型（若留空则使用默认 `CHAIRMAN_MODEL`），方便快速切换最终综合者。
 - 点击保存后立即生效；如果未做选择，则使用 `COUNCIL_MODELS` 与 `CHAIRMAN_MODEL` 环境变量中的默认值。
 
+### Discussion Mode Configuration
+
+**Default Roles:**
+| Role | Name (CN) | Avatar | Model |
+|------|-----------|--------|-------|
+| Optimist | 乐观主义者 | ☀️ | GPT-4o Mini |
+| Pessimist | 悲观主义者 | 🌧️ | Claude Sonnet |
+| Pragmatist | 实用主义者 | 🔧 | Gemini 2.5 Pro |
+| Innovator | 创新者 | 💡 | Grok-3 |
+
+**Customize Roles:**
+- Roles are defined in `lib/roles.ts`
+- Each role has: `id`, `name`, `nameEn`, `description`, `systemPrompt`, `modelProvider`, `modelName`, `color`, `avatar`
+- You can modify default roles or create custom ones via the UI (coming soon)
+
+**Discussion Settings:**
+- `maxRounds`: Maximum discussion rounds (default: 20)
+- `consensusThreshold`: Sensitivity for auto-detection (default: 0.7)
+
 ---
 
 ## Tech Stack
@@ -131,7 +170,8 @@ View all available models at: https://openrouter.ai/models
 - **Language**: TypeScript 5
 - **Frontend**: React 19, React Markdown
 - **Backend**: Next.js API Routes (full-stack in one)
-- **AI**: OpenRouter API
+- **AI Agents**: pi-mono (@mariozechner/pi-agent-core, @mariozechner/pi-ai)
+- **AI Providers**: OpenRouter API (100+ models)
 - **Storage**: JSON files (local file system)
 - **Deployment**: Docker + Docker Compose
 
@@ -143,10 +183,14 @@ View all available models at: https://openrouter.ai/models
 llm-council-nextjs/
 ├── app/                          # Next.js App Router
 │   ├── api/                      # API routes (backend)
-│   │   └── conversations/        # Conversation endpoints
+│   │   ├── conversations/        # Conversation endpoints
+│   │   └── discussions/          # Discussion mode endpoints (NEW)
+│   │       └── [id]/
+│   │           └── stream/       # POST/PATCH/DELETE for discussion streaming
 │   ├── components/               # React components
 │   │   ├── Sidebar.tsx           # Conversation list
 │   │   ├── ChatInterface.tsx     # Main chat UI
+│   │   ├── DiscussionInterface.tsx  # Discussion mode UI (NEW)
 │   │   ├── Stage1.tsx            # Stage 1 display
 │   │   ├── Stage2.tsx            # Stage 2 display
 │   │   └── Stage3.tsx            # Stage 3 display
@@ -160,7 +204,12 @@ llm-council-nextjs/
 │   ├── config.ts                 # Configuration
 │   ├── openrouter.ts             # OpenRouter client
 │   ├── storage.ts                # File storage
-│   └── council.ts                # Council orchestration
+│   ├── council.ts                # Council orchestration
+│   ├── roundtable.ts             # Roundtable mode orchestration
+│   ├── roles.ts                  # Discussion role definitions (NEW)
+│   └── discussion/               # Discussion mode (NEW)
+│       ├── orchestrator.ts       # Multi-agent discussion manager
+│       └── consensus.ts          # Consensus detection
 │
 ├── data/                         # Data storage
 │   └── conversations/            # JSON conversation files
@@ -357,12 +406,24 @@ CHAIRMAN_MODEL=your-chairman
 
 ## Features
 
+### Council Mode
 - ✅ **3-Stage Council Process** - Opinions → Peer Review → Final Answer
 - ✅ **Real-time Streaming** - See responses as they come in
 - ✅ **Parallel Queries** - All LLMs queried simultaneously
 - ✅ **Anonymous Review** - LLMs rank others without knowing identities
 - ✅ **Aggregate Rankings** - See which models perform best
 - ✅ **Conversation History** - All chats saved automatically
+
+### Discussion Mode (NEW)
+- ✅ **4 Predefined Roles** - Optimist ☀️, Pessimist 🌧️, Pragmatist 🔧, Innovator 💡
+- ✅ **Round-Robin Discussion** - Agents take turns responding
+- ✅ **Real-time Streaming** - Watch discussion unfold live
+- ✅ **User Intervention** - Redirect or deepen conversation anytime
+- ✅ **Consensus Detection** - Auto-ends when agents agree
+- ✅ **Configurable Limits** - Max 20 rounds (customizable)
+- ✅ **Role Customization** - Modify roles or create your own
+
+### General
 - ✅ **Beautiful UI** - Modern, responsive design
 - ✅ **TypeScript** - Full type safety
 - ✅ **Environment Config** - Easy model customization
@@ -413,12 +474,33 @@ npm run lint
 
 ## API Endpoints
 
+### Council Mode
+
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/conversations` | GET | List all conversations |
 | `/api/conversations` | POST | Create new conversation |
 | `/api/conversations/:id` | GET | Get conversation details |
-| `/api/conversations/:id/message/stream` | POST | Send message (streaming) |
+| `/api/conversations/:id/message/stream` | POST | Send message (council mode, streaming) |
+
+### Discussion Mode (NEW)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/discussions/:id/stream` | POST | Start a new discussion with topic |
+| `/api/discussions/:id/stream` | PATCH | User intervention (redirect/correction/deep-dive) |
+| `/api/discussions/:id/stream` | DELETE | Terminate ongoing discussion |
+
+**Discussion SSE Events:**
+- `discussion_start` - Discussion initialized
+- `round_start` - New round begins, includes speaker info
+- `message_delta` - Streaming message content
+- `message_complete` - Agent finished speaking
+- `round_complete` - Round completed
+- `consensus_check` - Consensus detection result
+- `discussion_complete` - Discussion ended (consensus or max rounds)
+- `user_intervention` - User message inserted
+- `error` - Error occurred
 
 ---
 
@@ -500,6 +582,7 @@ This project was migrated from a FastAPI + Vite architecture to Next.js full-sta
 
 ## Data Storage
 
+### Council Mode
 Conversations are stored as JSON files in `data/conversations/`:
 
 ```json
@@ -507,6 +590,7 @@ Conversations are stored as JSON files in `data/conversations/`:
   "id": "conversation-uuid",
   "created_at": "2024-01-01T00:00:00.000Z",
   "title": "Conversation Title",
+  "mode": "council",
   "messages": [
     {
       "role": "user",
@@ -517,6 +601,43 @@ Conversations are stored as JSON files in `data/conversations/`:
       "stage1": [...],
       "stage2": [...],
       "stage3": {...}
+    }
+  ]
+}
+```
+
+### Discussion Mode
+Discussion sessions are stored with the same structure, plus additional fields:
+
+```json
+{
+  "id": "conversation-uuid",
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "title": "Discussion: AI Safety",
+  "mode": "discussion",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is AI development safe?"
+    },
+    {
+      "role": "assistant",
+      "discussion_messages": [
+        {
+          "id": "msg-1",
+          "round": 1,
+          "speakerId": "optimist",
+          "speakerName": "乐观主义者",
+          "content": "AI development has tremendous potential...",
+          "timestamp": 1234567890
+        }
+      ],
+      "discussion_roles": [...],
+      "discussion_state": {
+        "currentRound": 5,
+        "consensusDetected": false,
+        "status": "completed"
+      }
     }
   ]
 }

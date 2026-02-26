@@ -53,10 +53,10 @@ function formatHistoryForModel(messages: Message[]): { role: string; content: st
     }
 
     // Handle standard single messages (like Stage 3 or previous turns)
-    if (msg.model_name && msg.content) {
+    if ('model_name' in msg && msg.content) {
       formatted.push({
         role: 'assistant',
-        content: `[${msg.model_name}]: ${msg.content}`,
+        content: `[${(msg as any).model_name}]: ${msg.content}`,
       });
       continue;
     }

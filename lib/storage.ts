@@ -6,6 +6,9 @@ import fs from 'fs';
 import path from 'path';
 import { DATA_DIR } from './config';
 
+import { DiscussionState, DiscussionMessage as DiscussionMessageData } from './discussion/orchestrator';
+import { AgentRole } from './roles';
+
 export interface Message {
   role: string;
   content?: string;
@@ -16,6 +19,11 @@ export interface Message {
   // Roundtable fields
   roundtable_turns?: RoundtableTurn[];
   is_intervention?: boolean;
+  intervention_type?: string;
+  // Discussion fields
+  discussion_state?: DiscussionState;
+  discussion_messages?: DiscussionMessageData[];
+  discussion_roles?: AgentRole[];
 }
 
 export interface RoundtableTurn {
@@ -32,8 +40,9 @@ export interface Conversation {
   created_at: string;
   title: string;
   messages: Message[];
-  mode?: 'council' | 'roundtable';
+  mode?: 'council' | 'roundtable' | 'discussion';
   config?: any; // To store per-conversation settings
+  discussion_state?: any; // For discussion mode state
 }
 
 export interface ConversationMetadata {
@@ -218,6 +227,32 @@ export function updateConversationTitle(
   }
 
   conversation.title = title;
+  saveConversation(conversation);
+}
+
+export function saveDiscussionMessage(
+  conversationId: string,
+  messages: DiscussionMessageData[],
+  roles: AgentRole[],
+  state: DiscussionState
+): void {
+  /**
+   * Save discussion messages and state to a conversation.
+   */
+  const conversation = getConversation(conversationId);
+  if (!conversation) {
+    throw new Error(`Conversation ${conversationId} not found`);
+  }
+
+  conversation.mode = 'discussion';
+  conversation.discussion_state = state;
+  conversation.messages.push({
+    role: 'assistant',
+    discussion_messages: messages,
+    discussion_roles: roles,
+    discussion_state: state,
+  });
+
   saveConversation(conversation);
 }
 

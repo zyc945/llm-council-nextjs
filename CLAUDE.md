@@ -179,27 +179,51 @@ The interactive startup script (`./start.sh`) will guide you through environment
 ## High-Level Architecture
 
 ### Overview
-This is a **Next.js 15 full-stack application** implementing a 3-stage LLM Council process. It migrated from a FastAPI + Vite architecture to a unified Next.js App Router structure.
+This is a **Next.js 15 full-stack application** implementing two modes:
+1. **3-Stage Council Process** - Traditional council voting and synthesis
+2. **Multi-Agent Discussion Mode** - Real-time collaborative discussion between AI agents
 
 ### Three-Stage Council Process
 1.  **Stage 1 - Initial Opinions**: Council models are queried in parallel for individual responses.
 2.  **Stage 2 - Peer Review**: Models rank anonymized Stage 1 responses to identify the most valuable ones.
 3.  **Stage 3 - Final Synthesis**: A Chairman model synthesizes all responses and rankings into a final answer.
 
+### Multi-Agent Discussion Mode (NEW)
+
+**Features:**
+- **4 Predefined Roles**: Optimist (☀️), Pessimist (🌧️), Pragmatist (🔧), Innovator (💡)
+- **Round-Robin Discussion**: Agents take turns responding to each other
+- **Real-time Streaming**: Watch the discussion unfold live
+- **User Intervention**: Jump in to redirect or deepen the conversation
+- **Consensus Detection**: Automatically ends when agents reach agreement
+- **20 Round Limit**: Maximum discussion length configurable
+
+**Architecture:**
+- **`lib/discussion/orchestrator.ts`**: Manages multi-agent discussion lifecycle
+- **`lib/discussion/consensus.ts`**: Consensus detection using heuristics/embeddings/LLM
+- **`lib/roles.ts`**: Role definitions and customization
+- **`app/api/discussions/[id]/stream/route.ts`**: SSE endpoint for discussion streaming
+- **`app/components/DiscussionInterface.tsx`**: Chat-style UI for discussions
+
 ### Core Architecture Components
 
 #### Server-Side (`lib/`)
 - **`council.ts`**: The main orchestrator for the 3-stage process (`runFullCouncil`).
+- **`discussion/orchestrator.ts`**: Multi-agent discussion orchestration using pi-agent-core.
+- **`discussion/consensus.ts`**: Consensus detection algorithms.
+- **`roles.ts`**: Agent role definitions and customization.
 - **`openrouter.ts`**: Client for OpenRouter API with parallel query support and timeouts.
 - **`storage.ts`**: Local file-system persistence using JSON files in `data/conversations/`.
 - **`config.ts` & `env.ts`**: Configuration management and Zod-based environment validation.
 
 #### API Routes (`app/api/`)
-- **`/api/conversations/[id]/message/stream`**: SSE (Server-Sent Events) endpoint that handles the streaming of the 3-stage process.
+- **`/api/conversations/[id]/message/stream`**: SSE endpoint for council mode streaming.
+- **`/api/discussions/[id]/stream`**: SSE endpoint for discussion mode (POST/PATCH/DELETE).
 - **`/api/models`**: Fetches current available models from OpenRouter.
 
 #### Client-Side (`app/components/`)
 - **`ChatInterface.tsx`**: React orchestrator that manages SSE events and global conversation state.
+- **`DiscussionInterface.tsx`**: Chat-style UI for multi-agent discussions.
 - **`ModelConfigModal.tsx`**: Allows per-conversation model selection and custom system prompts.
 - **`Stage1/2/3.tsx`**: UI components for rendering each stage of the council process.
 

@@ -312,7 +312,7 @@ Title:`;
   const messages: Message[] = [{ role: 'user', content: titlePrompt }];
 
   // Use a fast model for title generation
-  const response = await queryModel('openai/gpt-4o-mini', messages, 30000);
+  const response = await queryModel('openai/gpt-4o-mini', messages, { timeout: 30000 });
 
   if (response === null) {
     return 'New Conversation';
