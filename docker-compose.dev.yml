@@ -2,6 +2,19 @@
 # LLM Council - Development Docker Compose
 # Hot-reload enabled for development
 # ============================================
+#
+# Usage:
+#   Standard dev (no access control):
+#     docker-compose -f docker-compose.dev.yml up
+#
+#   With IP-based access control (localhost + Tailscale only):
+#     docker-compose -f docker-compose.dev.yml up llm-council-dev-secure
+#
+#   Local dev without Docker:
+#     npm run dev          # Standard
+#     npm run dev:secure   # With access control
+#     npm run dev:docker   # Bind to Tailscale IP only
+# ============================================
 
 services:
   llm-council-dev:
@@ -24,7 +37,7 @@ services:
       - COUNCIL_MODELS=${COUNCIL_MODELS:-}
       - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-}
 
-      # 服务器配置
+      # 服务器配置 - 应用层访问控制，绑定到所有接口
       - PORT=3000
       - HOSTNAME=0.0.0.0
 
@@ -67,6 +80,36 @@ services:
     # stdin/tty 支持（用于调试）
     stdin_open: true
     tty: true
+
+  # 可选：使用访问控制的开发服务器
+  llm-council-dev-secure:
+    container_name: llm-council-dev-secure
+    image: llm-council:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=development
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required}
+      - COUNCIL_MODELS=${COUNCIL_MODELS:-}
+      - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-}
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      - ./data:/app/data
+    networks:
+      - llm-council-dev-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    # 使用自定义服务器进行访问控制
+    command: ["node", "server.dev.js"]
 
 # 自定义网络
 networks:

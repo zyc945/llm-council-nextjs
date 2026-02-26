@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:secure": "node ./server.dev.js",
+    "dev:docker": "HOSTNAME=100.64.155.41 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
